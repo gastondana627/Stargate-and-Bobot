@@ -7,11 +7,11 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the absolute path to the images relative to the script directory
 robot_img_path = os.path.join(script_dir, "Graphics_Audio", "img", "robot.png")
 moonrock_img_path = os.path.join(script_dir, "Graphics_Audio", "img", "moonrock.png")
-stargate_img_path = os.path.join(script_dir, "Graphics_Audio", "img", "stargate.png")
+stargate_img_path = os.path.join(script_dir, "Graphics_Audio", "img", "Stargate.png")  # Ensure case matches
 
 # Initialize Pygame
 pygame.init()
-pygame.font.init() # Initialize font module
+pygame.font.init()  # Initialize font module
 
 # Define colors
 WHITE = (255, 255, 255)
@@ -27,16 +27,16 @@ font = pygame.font.Font(None, 36)
 CELL_SIZE = 80
 GRID_SIZE = 8
 WIDTH, HEIGHT = GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE
-screen = None # Initialize as None
+screen = None  # Initialize as None
 
-from game_logic import move_robot, pick_up_rock, drop_rock, get_game_state, GRID_SIZE
+from game_logic import move_robot, pick_up_rock, drop_rock, get_game_state
 
 # Load and scale images
 try:
     # **DEBUGGING: Print paths immediately before loading**
     print("Loading robot image from:", robot_img_path)
     robot_img = pygame.image.load(robot_img_path)
-    robot_img = pygame.transform.scale(robot_img, (80, 80)) # Assuming 80 is the cell size
+    robot_img = pygame.transform.scale(robot_img, (80, 80))  # Assuming 80 is the cell size
 
     print("Loading moonrock image from:", moonrock_img_path)
     moonrock_img = pygame.image.load(moonrock_img_path)
@@ -44,9 +44,14 @@ try:
 
     print("Loading stargate image from:", stargate_img_path)
     stargate_img = pygame.image.load(stargate_img_path)
-    stargate_img = pygame.transform.scale(stargate_img, (160, 160)) # Assuming 160 is the stargate size
+    stargate_img = pygame.transform.scale(stargate_img, (160, 160))  # Assuming 160 is the stargate size
 except pygame.error as e:
     print(f"Error loading image: {e}")
+    pygame.quit()
+    exit()
+except FileNotFoundError as e:
+    print(f"File not found: {e.filename}")
+    print("Ensure file names are correctly spelled and match case sensitivity.")
     pygame.quit()
     exit()
 

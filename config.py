@@ -24,3 +24,5 @@ GOLD = (255, 215, 0)
 # Initial Game Parameters
 INITIAL_MOONROCK_COUNT = 5
 STARGATE_SIZE = 2 #Dimension of the stargate, 2x2
+
+

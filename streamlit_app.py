@@ -7,14 +7,7 @@ import main
 import json
 import time
 import random # For randomness on image choice.
-
-# List of images to load from  "Graphics_Audio/img/"
-image_options = [
-    "Graphics_Audio/img/robot.png", # Images.
-    "Graphics_Audio/img/moonrock.png", # Images
-    "Graphics_Audio/img/Stargate.png", # Images
-    "Graphics_Audio/img/Stargate1.jpg", # Images
-]
+import streamlit.components.v1 as components #Streamlined
 
 # Set up page configuration
 st.set_page_config(page_title="Moonrock Collection Game", page_icon="🤖")
@@ -44,7 +37,10 @@ if 'game_over' not in st.session_state:
     st.session_state['game_over'] = False
 if 'high_score_saved' not in st.session_state: # Boolean to check if a highscore exists.
     st.session_state['high_score_saved'] = False
-
+if 'welcome_image' not in st.session_state:
+    st.session_state['welcome_image'] = None
+if 'congrats_image' not in st.session_state:
+    st.session_state['congrats_image'] = None
 
 def display_frame(frame):
     """Displays a Pygame frame in Streamlit."""
@@ -56,25 +52,28 @@ def display_frame(frame):
         st.image(image, caption="Game View", use_container_width=True)
 
 # Load the welcome image and congratulations image
-welcome_image = None #Set intial Image
-congrats_image = None #set image
-
-try: #Then we see if the image load will even work with these file paths.
-    random_img_path = random.choice(image_options) #Setting that the image can only be from this scope for random.
-    welcome_image = Image.open(random_img_path) # Loading function and directory
-    congrats_image = Image.open(random_img_path)  # Congratulation image when completing, also same variable now.
-except FileNotFoundError:
-    #Set the images to None, in case they can't load.
-    welcome_image = None #If image file names are not accurate.
-    congrats_image = None #Set again if the code and check is in place.
-    print ("Error loading images.  Check your file paths and directory structure.") # Set the error message
+if st.session_state['welcome_image'] is None or st.session_state['congrats_image'] is None:
+    try:
+        import random
+        image_options = [
+            "Graphics_Audio/img/robot.png",
+            "Graphics_Audio/img/moonrock.png",
+            "Graphics_Audio/img/Stargate.png",
+            "Graphics_Audio/img/Stargate1.jpg",
+        ]
+        random_img_path = random.choice(image_options)
+        st.session_state['welcome_image'] = Image.open(random_img_path)
+        st.session_state['congrats_image'] = Image.open(random_img_path)
+    except FileNotFoundError:
+       st.session_state['welcome_image'] = None
+       st.session_state['congrats_image'] = None
 
 # Welcome Screen
 if not st.session_state['game_started']:
     st.title("Moonrock Collection Game")
 
-    if welcome_image is not None: #If we get a "image is not None", then it does what it is supposed to do.
-       st.image(welcome_image, caption="Welcome!", use_container_width=True)  # Display a welcome message
+    if st.session_state['welcome_image'] is not None:
+       st.image(st.session_state['welcome_image'], caption="Welcome! Help Bobot collect the moonrocks!", use_container_width=True)  # Display a welcome message
     else:
         st.write("You can't load this image - welcome.")
 
@@ -100,31 +99,38 @@ else:
     st.title(f"Moonrock Collection Game - Player: {st.session_state['player_name']}")
     st.write("Use the buttons below to control the robot:")
 
+    #Get the key
     if st.session_state['game_state'].time_remaining > 0 and not st.session_state['game_over']: # Timer
         st.write(f"Time Remaining: {int(st.session_state['game_state'].time_remaining)} seconds")
-        # Layout with columns for the directions
-        col1, col2, col3 = st.columns(3)
-        with col2:
-            if st.button("↑ Up"):
-                st.session_state['game_state'].move_robot(0, -1)
-        with col1:
-            if st.button("← Left"):
-                st.session_state['game_state'].move_robot(-1, 0)
-        with col3:
-            if st.button("→ Right"):
-                st.session_state['game_state'].move_robot(1, 0)
-        col1, col2, col3 = st.columns(3)
-        with col2:
-            if st.button("↓ Down"):
-                st.session_state['game_state'].move_robot(0, 1)
+        #Check if Game Over Conditions
 
-        col1, col2 = st.columns(2)
+       # Check if game has loaded by setting key input before buttons
+        key_input = st.session_state.get("key", None)
+
+        #This is the list of keys used and functions they call.
+        col1, col2, col3 = st.columns(3)
+        with col2:
+            if key_input == "ArrowUp" or st.button("↑ Up"):
+                st.session_state['game_state'].move_robot(0, -1) #move robot
+        with col1:
+            if key_input == "ArrowLeft" or st.button("← Left"):
+                st.session_state['game_state'].move_robot(-1, 0) #move robot
+        with col3:
+            if  key_input == "ArrowRight" or st.button("→ Right"):
+                st.session_state['game_state'].move_robot(1, 0) #move robot
+
+        with col2:
+            if key_input == "ArrowDown" or st.button("↓ Down"):
+                st.session_state['game_state'].move_robot(0, 1) #move robot
+
+        #Second Layout with Pick Up or Drops
+        col1, col2 = st.columns(2) #New Layout for new rows, or buttons for the streamlit app.
         with col1:
             if st.button("Pick Up"):
-                st.session_state['game_state'].pick_up_rock()
+                st.session_state['game_state'].pick_up_rock() #Pick Up
         with col2:
             if st.button("Drop"):
-                st.session_state['game_state'].move_robot(1, 0) #The robot then does the image
+                st.session_state['game_state'].drop_rock() #Drop the rock to the zone
 
         # Get the game state.
         frame = main.generate_frame(st.session_state['game_state'].get_game_state())
@@ -133,6 +139,7 @@ else:
         #Check if Game Over Conditions
         if st.session_state['game_state'].all_rocks_collected() or st.session_state['game_state'].time_remaining <= 0:
             st.session_state['game_over'] = True
+
     else: # If all the checks failed, we have game over.
         st.session_state['game_over'] = True
 
@@ -142,8 +149,8 @@ else:
         else: # The person won!
             st.success("Congratulations! You collected all the moonrocks!")
 
-        if congrats_image is not None: # Only load if there is a valid picture.
-            st.image(congrats_image, caption="Congratulations!", use_container_width=True)
+        if st.session_state['congrats_image'] is not None: # Only load if there is a valid picture.
+            st.image(st.session_state['congrats_image'], caption="Congratulations!", use_container_width=True)
         else:
             st.write("You can't load this image - congratulations.")
 
@@ -166,3 +173,6 @@ else:
         st.subheader("High Scores")
         for name, score in st.session_state['high_scores']: # Looping for each name and score.
             st.write(f"{name}: {score}") # Setting high scores and names.
+
+
+

@@ -1,4 +1,3 @@
-# game_logic.py
 import pygame
 import random
 
@@ -21,15 +20,15 @@ while len(moonrocks) < 5:
         moonrocks.add(new_rock)
 
 # Load sounds
-pygame.mixer.init()
 try:
+    if pygame.mixer.get_init() is None:  # Check if mixer is already initialized
+        pygame.mixer.init()
     pickup_sound = pygame.mixer.Sound("aud/a_robot_beeping.wav")
     drop_sound = pygame.mixer.Sound("aud/a_robot_beeping-2.wav")
 except pygame.error as e:
     print(f"Error loading sound: {e}")
     pickup_sound = None  # Disable pickup sound if load fails
     drop_sound = None    # Disable drop sound if load fails
-
 
 def move_robot(dx, dy):
     """Move the robot within the grid."""
@@ -54,7 +53,7 @@ def pick_up_rock():
         moonrocks.remove(robot_position)  # Remove rock from grid
         carrying_rock = True
         if pickup_sound:
-          pygame.mixer.Sound.play(pickup_sound)
+            pygame.mixer.Sound.play(pickup_sound)
         print(f"Moonrock picked up at {robot_position}")
         return True
     return False
@@ -71,7 +70,7 @@ def drop_rock():
         carrying_rock = False
         score += 1  # Increase score when rock is delivered
         if drop_sound:
-          pygame.mixer.Sound.play(drop_sound)
+            pygame.mixer.Sound.play(drop_sound)
         print(f"Moonrock delivered to Stargate! Score: {score}")
         return True
     else:
@@ -79,8 +78,8 @@ def drop_rock():
         return False
 
 def get_game_state():
-    global robot_position, carrying_rock, moonrocks, score
     """Return the current state of the game."""
+    global robot_position, carrying_rock, moonrocks, score
     return {
         "robot_position": robot_position,
         "carrying_rock": carrying_rock,

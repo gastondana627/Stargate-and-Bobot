@@ -1,5 +1,6 @@
 import pygame
 import random
+import os  # Import the os module
 
 # Grid dimensions
 GRID_SIZE = 8
@@ -23,8 +24,15 @@ while len(moonrocks) < 5:
 try:
     if pygame.mixer.get_init() is None:  # Check if mixer is already initialized
         pygame.mixer.init()
-    pickup_sound = pygame.mixer.Sound("Graphics_Audio/aud/a_robot_beeping.wav")
-    drop_sound = pygame.mixer.Sound("Graphics_Audio/aud/a_robot_beeping-2.wav")
+
+    # Construct absolute paths for audio files
+    cwd = os.getcwd()
+    pickup_sound_path = os.path.join(cwd, "Graphics_Audio", "aud", "a_robot_beeping.wav")
+    drop_sound_path = os.path.join(cwd, "Graphics_Audio", "aud", "a_robot_beeping-2.wav")
+
+    pickup_sound = pygame.mixer.Sound(pickup_sound_path)  # Use absolute path
+    drop_sound = pygame.mixer.Sound(drop_sound_path)  # Use absolute path
+
 except pygame.error as e:
     print(f"Error loading sound: {e}")
     pickup_sound = None  # Disable pickup sound if load fails

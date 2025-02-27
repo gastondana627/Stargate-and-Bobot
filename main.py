@@ -1,14 +1,18 @@
 import pygame
-import os  # Import the os module
+import os
 
-# Print the current working directory
-print(f"Current working directory: {os.getcwd()}")
+# Get the current working directory
+cwd = os.getcwd()
 
-# List the contents of the Graphics_Audio/img/ directory
-try:
-    print(f"Contents of Graphics_Audio/img/: {os.listdir('Graphics_Audio/img/')}")
-except FileNotFoundError:
-    print("Graphics_Audio/img/ directory not found")
+# Construct the absolute path to the images
+robot_img_path = os.path.join(cwd, "Graphics_Audio", "img", "robot.png")
+moonrock_img_path = os.path.join(cwd, "Graphics_Audio", "img", "moonrock.png")
+stargate_img_path = os.path.join(cwd, "Graphics_Audio", "img", "stargate.png")
+
+# Print the absolute paths to verify them
+print(f"Robot image path: {robot_img_path}")
+print(f"Moonrock image path: {moonrock_img_path}")
+print(f"Stargate image path: {stargate_img_path}")
 
 from game_logic import move_robot, pick_up_rock, drop_rock, get_game_state, GRID_SIZE
 
@@ -22,13 +26,13 @@ pygame.display.set_caption("Moonrock Collection Game")
 
 # Load and scale images
 try:
-    robot_img = pygame.image.load("Graphics_Audio/img/robot.png")  # Update the image path here
+    robot_img = pygame.image.load(robot_img_path)  # Use the absolute path
     robot_img = pygame.transform.scale(robot_img, (CELL_SIZE, CELL_SIZE))
 
-    moonrock_img = pygame.image.load("Graphics_Audio/img/moonrock.png")  # Update the image path here
+    moonrock_img = pygame.image.load(moonrock_img_path)  # Use the absolute path
     moonrock_img = pygame.transform.scale(moonrock_img, (CELL_SIZE, CELL_SIZE))
 
-    stargate_img = pygame.image.load("Graphics_Audio/img/stargate.png")  # Update the image path here
+    stargate_img = pygame.image.load(stargate_img_path)  # Use the absolute path
     stargate_img = pygame.transform.scale(stargate_img, (CELL_SIZE * 2, CELL_SIZE * 2))
 except pygame.error as e:
     print(f"Error loading image: {e}")

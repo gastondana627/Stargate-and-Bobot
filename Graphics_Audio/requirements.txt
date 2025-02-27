@@ -1,0 +1,5 @@
+
+
+streamlit
+pygame==2.5.2
+pillow

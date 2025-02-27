@@ -13,6 +13,24 @@ stargate_img_path = os.path.join(script_dir, "Graphics_Audio", "img", "stargate.
 pygame.init()
 pygame.font.init() # Initialize font module
 
+# Define colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GRAY = (50, 50, 50)
+GREEN = (0, 200, 0)
+GOLD = (255, 215, 0)
+
+# Font setup
+font = pygame.font.Font(None, 36)
+
+# Keep these in global scope, but don't initialize the screen yet
+CELL_SIZE = 80
+GRID_SIZE = 8
+WIDTH, HEIGHT = GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE
+screen = None # Initialize as None
+
+from game_logic import move_robot, pick_up_rock, drop_rock, get_game_state, GRID_SIZE
+
 # Load and scale images
 try:
     # **DEBUGGING: Print paths immediately before loading**
@@ -31,24 +49,6 @@ except pygame.error as e:
     print(f"Error loading image: {e}")
     pygame.quit()
     exit()
-
-# Define colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (50, 50, 50)
-GREEN = (0, 200, 0)
-GOLD = (255, 215, 0)
-
-# Font setup
-font = pygame.font.Font(None, 36)
-
-# Keep these in global scope, but don't initialize the screen yet
-CELL_SIZE = 80
-GRID_SIZE = 8
-WIDTH, HEIGHT = GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE
-screen = None # Initialize as None
-
-from game_logic import move_robot, pick_up_rock, drop_rock, get_game_state, GRID_SIZE # has to be placed here or it will not work
 
 def generate_frame():
     """Generates a single game frame as a Pygame Surface."""

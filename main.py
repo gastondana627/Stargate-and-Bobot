@@ -1,15 +1,15 @@
 import pygame
 import os
 
-# Get the current working directory
-cwd = os.getcwd()
+# Get the directory of the current script (main.py)
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Construct the absolute path to the images
-robot_img_path = os.path.join(cwd, "Graphics_Audio", "img", "robot.png")
-moonrock_img_path = os.path.join(cwd, "Graphics_Audio", "img", "moonrock.png")
-stargate_img_path = os.path.join(cwd, "Graphics_Audio", "img", "stargate.png")
+# Construct the absolute path to the images relative to the script directory
+robot_img_path = os.path.join(script_dir, "Graphics_Audio", "img", "robot.png")
+moonrock_img_path = os.path.join(script_dir, "Graphics_Audio", "img", "moonrock.png")
+stargate_img_path = os.path.join(script_dir, "Graphics_Audio", "img", "stargate.png")
 
-# Print the absolute paths to verify them
+# Print the absolute paths to verify them (remove in final version)
 print(f"Robot image path: {robot_img_path}")
 print(f"Moonrock image path: {moonrock_img_path}")
 print(f"Stargate image path: {stargate_img_path}")

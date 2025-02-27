@@ -5,7 +5,14 @@ import os
 
 # Initialize Pygame
 pygame.init()
-pygame.mixer.init()
+
+# Check if the audio system is available
+audio_enabled = True
+try:
+    pygame.mixer.init()
+except pygame.error:
+    audio_enabled = False
+    st.warning("Audio is disabled due to lack of a sound device.")
 
 # Load assets
 GRID_SIZE = 8
@@ -14,16 +21,17 @@ CELL_SIZE = 80
 # Paths for graphics & audio
 ASSET_DIR = "Graphics_Audio"
 IMG_DIR = os.path.join(ASSET_DIR, "img")
-SND_DIR = os.path.join(ASSET_DIR, "audio")
+SND_DIR = os.path.join(ASSET_DIR, "aud")
 
 # Load images
 robot_img = pygame.image.load(os.path.join(IMG_DIR, "robot.png"))
 moonrock_img = pygame.image.load(os.path.join(IMG_DIR, "moonrock.png"))
 stargate_img = pygame.image.load(os.path.join(IMG_DIR, "Stargate.png"))
 
-# Load sounds
-pickup_sound = pygame.mixer.Sound(os.path.join(SND_DIR, "a_robot_beeping.wav"))
-drop_sound = pygame.mixer.Sound(os.path.join(SND_DIR, "a_robot_beeping-2.wav"))
+# Load sounds if audio is enabled
+if audio_enabled:
+    pickup_sound = pygame.mixer.Sound(os.path.join(SND_DIR, "a_robot_beeping.wav"))
+    drop_sound = pygame.mixer.Sound(os.path.join(SND_DIR, "a_robot_beeping-2.wav"))
 
 # Game State
 robot_pos = [0, 0]
@@ -66,7 +74,8 @@ def pick_up():
             if rock == robot_pos:
                 carrying = True
                 moonrocks.remove(rock)
-                pickup_sound.play()
+                if audio_enabled:
+                    pickup_sound.play()
                 break
 
 def drop():
@@ -75,7 +84,8 @@ def drop():
     if carrying and robot_pos in stargate:
         carrying = False
         score += 1
-        drop_sound.play()
+        if audio_enabled:
+            drop_sound.play()
 
 def generate_frame():
     """Creates a frame with game elements and returns it as an image."""
@@ -120,3 +130,4 @@ if st.button("Drop"):
 # Display Game Screen
 frame = generate_frame()
 st.image(pygame.surfarray.pixels3d(frame), use_container_width=True)
+

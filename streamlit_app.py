@@ -5,22 +5,23 @@ from PIL import Image
 from game_logic import move_robot, pick_up_rock, drop_rock, get_game_state, GRID_SIZE
 import main as game
 
-# Set up Streamlit page
+# Set up page configuration
 st.set_page_config(page_title="Moonrock Collection Game", page_icon="🤖")
 
-def display_frame():
-    """Fetches and displays the latest Pygame frame in Streamlit."""
-    frame = game.generate_frame()
-    img_byte_arr = io.BytesIO()
-    pygame.image.save(frame, img_byte_arr, "PNG")
-    image = Image.open(io.BytesIO(img_byte_arr.getvalue()))
-    st.image(image, caption="Game View", use_column_width=True)
+def display_frame(frame):
+    """Displays a Pygame frame in Streamlit."""
+    if frame:
+        img_byte_arr = io.BytesIO()
+        pygame.image.save(frame, img_byte_arr, "PNG")  # Save the image as a png.
+        img_byte_arr = img_byte_arr.getvalue()
+        image = Image.open(io.BytesIO(img_byte_arr))
+        st.image(image, caption="Game View", use_column_width=True)
 
 # Streamlit UI
 st.title("Moonrock Collection Game")
 st.write("Use the buttons below to control the robot:")
 
-# Movement Controls
+# Layout with columns for the directions
 col1, col2, col3 = st.columns(3)
 with col2:
     if st.button("↑ Up"):
@@ -36,7 +37,6 @@ with col2:
     if st.button("↓ Down"):
         move_robot(0, 1)
 
-# Pickup and Drop Buttons
 col1, col2 = st.columns(2)
 with col1:
     if st.button("Pick Up"):
@@ -45,10 +45,5 @@ with col2:
     if st.button("Drop"):
         drop_rock()
 
-# Display the updated game frame
-display_frame()
-
-# Show score
-game_state = get_game_state()
-st.write(f"Score: {game_state['score']}")
-st.write(f"Carrying Rock: {'Yes' if game_state['carrying_rock'] else 'No'}")
+frame = game.generate_frame()
+display_frame(frame)

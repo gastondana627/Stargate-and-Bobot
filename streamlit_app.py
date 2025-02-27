@@ -6,6 +6,15 @@ from game_logic import move_robot, pick_up_rock, drop_rock, get_game_state, Game
 import main
 import json
 import time
+import random # For randomness on image choice.
+
+# List of images to load from  "Graphics_Audio/img/"
+image_options = [
+    "Graphics_Audio/img/robot.png", # Images.
+    "Graphics_Audio/img/moonrock.png", # Images
+    "Graphics_Audio/img/Stargate.png", # Images
+    "Graphics_Audio/img/Stargate1.jpg", # Images
+]
 
 # Set up page configuration
 st.set_page_config(page_title="Moonrock Collection Game", page_icon="🤖")
@@ -47,23 +56,27 @@ def display_frame(frame):
         st.image(image, caption="Game View", use_container_width=True)
 
 # Load the welcome image and congratulations image
-try:
-    welcome_image = Image.open("images/robot_welcome.png") # Loading function and directory
-    congrats_image = Image.open("images/robot_congrats.png") # Congratulation image when completing.
+welcome_image = None #Set intial Image
+congrats_image = None #set image
+
+try: #Then we see if the image load will even work with these file paths.
+    random_img_path = random.choice(image_options) #Setting that the image can only be from this scope for random.
+    welcome_image = Image.open(random_img_path) # Loading function and directory
+    congrats_image = Image.open(random_img_path)  # Congratulation image when completing, also same variable now.
 except FileNotFoundError:
     #Set the images to None, in case they can't load.
-    welcome_image = None
-    congrats_image = None
-    st.write("You can't load this image - welcome.") #Print when that can't happen
-    st.write("You can't load this image - congratulations.")#Print when that can't happen
-    print("Error loading images.  Check your file paths and directory structure.")
+    welcome_image = None #If image file names are not accurate.
+    congrats_image = None #Set again if the code and check is in place.
+    print ("Error loading images.  Check your file paths and directory structure.") # Set the error message
 
 # Welcome Screen
 if not st.session_state['game_started']:
     st.title("Moonrock Collection Game")
 
-    if welcome_image is not None:
-       st.image(welcome_image, caption="Welcome!", use_column_width=True)  # Display a welcome message
+    if welcome_image is not None: #If we get a "image is not None", then it does what it is supposed to do.
+       st.image(welcome_image, caption="Welcome!", use_container_width=True)  # Display a welcome message
+    else:
+        st.write("You can't load this image - welcome.")
 
     st.write("Enter your name to start:")
     player_name_input = st.text_input("Your Name", key="player_name_input")
@@ -111,7 +124,7 @@ else:
                 st.session_state['game_state'].pick_up_rock()
         with col2:
             if st.button("Drop"):
-                st.session_state['game_state'].drop_rock()
+                st.session_state['game_state'].move_robot(1, 0) #The robot then does the image
 
         # Get the game state.
         frame = main.generate_frame(st.session_state['game_state'].get_game_state())
@@ -130,7 +143,9 @@ else:
             st.success("Congratulations! You collected all the moonrocks!")
 
         if congrats_image is not None: # Only load if there is a valid picture.
-           st.image(congrats_image, caption="Congratulations", use_column_width=True)  # Show a welcome message
+            st.image(congrats_image, caption="Congratulations!", use_container_width=True)
+        else:
+            st.write("You can't load this image - congratulations.")
 
         score = st.session_state['game_state'].score # Setting variable to check highscore.
         st.write(f"Your Score: {score}") # Setting the score.
@@ -151,6 +166,3 @@ else:
         st.subheader("High Scores")
         for name, score in st.session_state['high_scores']: # Looping for each name and score.
             st.write(f"{name}: {score}") # Setting high scores and names.
-
-# Ensure that the images/ folder has these images, and it should then start working out.
-

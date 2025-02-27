@@ -11,13 +11,13 @@ pygame.display.set_caption("Moonrock Collection Game")
 
 # Load and scale images
 try:
-    robot_img = pygame.image.load("img/robot.png")
+    robot_img = pygame.image.load("Graphics_Audio/img/robot.png")
     robot_img = pygame.transform.scale(robot_img, (CELL_SIZE, CELL_SIZE))
 
-    moonrock_img = pygame.image.load("img/moonrock.png")
+    moonrock_img = pygame.image.load("Graphics_Audio/img/moonrock.png")
     moonrock_img = pygame.transform.scale(moonrock_img, (CELL_SIZE, CELL_SIZE))
 
-    stargate_img = pygame.image.load("img/stargate.png")
+    stargate_img = pygame.image.load("Graphics_Audio/img/stargate.png")
     stargate_img = pygame.transform.scale(stargate_img, (CELL_SIZE * 2, CELL_SIZE * 2))
 except pygame.error as e:
     print(f"Error loading image: {e}")

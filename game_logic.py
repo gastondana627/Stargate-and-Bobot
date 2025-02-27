@@ -23,8 +23,8 @@ while len(moonrocks) < 5:
 try:
     if pygame.mixer.get_init() is None:  # Check if mixer is already initialized
         pygame.mixer.init()
-    pickup_sound = pygame.mixer.Sound("aud/a_robot_beeping.wav")
-    drop_sound = pygame.mixer.Sound("aud/a_robot_beeping-2.wav")
+    pickup_sound = pygame.mixer.Sound("Graphics_Audio/aud/a_robot_beeping.wav")
+    drop_sound = pygame.mixer.Sound("Graphics_Audio/aud/a_robot_beeping-2.wav")
 except pygame.error as e:
     print(f"Error loading sound: {e}")
     pickup_sound = None  # Disable pickup sound if load fails

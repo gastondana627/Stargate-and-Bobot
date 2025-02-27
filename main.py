@@ -13,36 +13,46 @@ pygame.font.init()  # Initialize font module
 # Font setup
 font = pygame.font.Font(None, 36)
 
+# You have set the global grid size.
+
+# I just need to set this.
+
 # Setting Global Surfaces - IMPORTANT THIS NEEDS TO BE OUTSIDE.
-WIDTH, HEIGHT = GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE
 
-# Set up window (important in streamlit because the window needs to be set BEFORE drawing)
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Moonrock Collection Game")
-
+# Make everything fit here so if needed can always reload in place.
+def newGrid():
+    """Functions to Set the screen"""
+    CELL_SIZE = 40
+    GRID_SIZE = 6
+ #Make sure when you set the width to have that value and how all functions can see you properly.
 def generate_frame(game_state):
     """Generates a single game frame as a Pygame Surface."""
-    # Note we want this as small and modular as possible, as all we need is to "draw"
-    # the frame.
+    #Note we want this as small and modular as possible, as all we need is to "draw"
+    #the frame.
 
-    # Access global variables
+    #Access global variables
     global robot_img, moonrock_img, stargate_img, screen, font, CELL_SIZE, WIDTH, HEIGHT
 
-    #Setting the black background on all the frames.
-    screen.fill(BLACK)
+    #Accessing the variable from the script to print from different locations.
+    newGrid()#Calling
+    WIDTH, HEIGHT = GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE#Setting the screen
 
-    # Draw grid lines
-    for x in range(0, WIDTH, CELL_SIZE): # Iterating the with.
-        for y in range(0, HEIGHT, CELL_SIZE): #Iterating the Heigh
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))# Setting the screen now after setting what the varibles are, and its the proper order now
+    pygame.display.set_caption("Moonrock Collection Game")#Name
+
+    screen.fill(BLACK)# Fill the screen with a black background
+
+    for x in range(0, WIDTH, CELL_SIZE):# Iterating the with.
+        for y in range(0, HEIGHT, CELL_SIZE):#Iterating the Heigh
             rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-            pygame.draw.rect(screen, GRAY, rect, 1) # Draw the rectangle on the screen
+            pygame.draw.rect(screen, GRAY, rect, 1)# Draw the rectangle on the screen
 
    # Draw Stargate zone as a 2x2 area
-    for stargate_cell in game_state["stargate_zone"]: # Iterate on the star zone for multiple zones
+    for stargate_cell in game_state["stargate_zone"]:# Iterate on the star zone for multiple zones
         screen.blit(stargate_img, (stargate_cell[0] * CELL_SIZE, stargate_cell[1] * CELL_SIZE))
 
     # Draw moonrocks from the global set
-    for rock in game_state["moonrocks"]:
+    for rock in game_state["moonrocks"]:#Call it.
         screen.blit(moonrock_img, (rock[0] * CELL_SIZE, rock[1] * CELL_SIZE))
 
     # Draw robot (based on robot_position)
@@ -55,9 +65,16 @@ def generate_frame(game_state):
     score_text = font.render(f"Score: {score}", True, WHITE)
     screen.blit(score_text, (10, 10))
 
-    # Display Carrying Status
-    carrying = game_state["carrying_rock"] # Set on the dictionary if its set.
+    # To check the test status and has is happening with the current and all that is going on.
+    carrying = game_state["carrying_rock"]#Set a carry value then set a  if for the code.
 
+    # Get time remaining
+    time_remaining = game_state["time_remaining"]
+    # Display a variable that is loaded at the top from config with all those settings.
+    time_text = font.render(f"Time: {int(time_remaining)}", True, WHITE)
+    screen.blit(time_text, (WIDTH - 150, 10)) # To have all data on the image what the user wants at the right place.
+
+    # Display Carrying Status
     carrying_text = font.render(f"Carrying: {'Yes' if carrying else 'No'}", True, WHITE)
     screen.blit(carrying_text, (10, 40)) # If the robot was carrying, display.
 
@@ -97,3 +114,7 @@ robot_img, moonrock_img, stargate_img = load_images() # Setting the global scope
 
 def quit_pygame(): #Quitting when everything is done.
     pygame.quit()
+
+
+
+

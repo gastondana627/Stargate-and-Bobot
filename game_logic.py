@@ -139,4 +139,3 @@ def get_game_state(): #Function to access gamestate
 def all_rocks_collected(): #Function to check the collection of rocks
     print ("No Long Used Function")
 
-

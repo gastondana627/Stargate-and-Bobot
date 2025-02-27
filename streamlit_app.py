@@ -94,78 +94,91 @@ if not st.session_state['game_started']:
             st.warning("Please enter your name to start the game.")
 else:
     # Game Play Area
-    st.title(f"Moonrock Collection Game - Player: {st.session_state['player_name']}")
-    st.write("Use the buttons below to control the robot:")
+    if not st.session_state['game_over']:
+        st.title(f"Moonrock Collection Game - Player: {st.session_state['player_name']}")
+        st.write("Use the buttons below to control the robot:")
 
-    # Timer display
-    time_remaining = int(st.session_state['game_state'].time_remaining)
-    st.metric("Time Remaining", f"{time_remaining} seconds")
+        # Timer display
+        time_remaining = int(st.session_state['game_state'].time_remaining)
+        st.metric("Time Remaining", f"{time_remaining} seconds")
 
-    # Movement Buttons
-    col1, col2, col3 = st.columns(3)
-    with col2:
-        if st.button("↑ Up"):
-            st.session_state['game_state'].move_robot(0, -1)
-    with col1:
-        if st.button("← Left"):
-            st.session_state['game_state'].move_robot(-1, 0)
-    with col3:
-        if st.button("→ Right"):
-            st.session_state['game_state'].move_robot(1, 0)
-    with col2:
-        if st.button("↓ Down"):
-            st.session_state['game_state'].move_robot(0, 1)
+        # Movement Buttons
+        col1, col2, col3 = st.columns(3)
+        with col2:
+            if st.button("↑ Up"):
+                st.session_state['game_state'].move_robot(0, -1)
+        with col1:
+            if st.button("← Left"):
+                st.session_state['game_state'].move_robot(-1, 0)
+        with col3:
+            if st.button("→ Right"):
+                st.session_state['game_state'].move_robot(1, 0)
+        with col2:
+            if st.button("↓ Down"):
+                st.session_state['game_state'].move_robot(0, 1)
 
-    # Action Buttons
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Pick Up"):
-            st.session_state['game_state'].pick_up_rock()
-    with col2:
-        if st.button("Drop"):
-            st.session_state['game_state'].drop_rock()
+        # Action Buttons
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Pick Up"):
+                st.session_state['game_state'].pick_up_rock()
+        with col2:
+            if st.button("Drop"):
+                st.session_state['game_state'].drop_rock()
 
-    # Generate and display the frame
-    frame = main.generate_frame(st.session_state['game_state'].get_game_state())
-    display_frame(frame)
+        # Generate and display the frame
+        frame = main.generate_frame(st.session_state['game_state'].get_game_state())
+        display_frame(frame)
 
-    # Game Over Check
-    if st.session_state['game_state'].all_rocks_collected() or st.session_state['game_state'].time_remaining <= 0:
-        st.session_state['game_over'] = True
+        # Game Over Check
+        if st.session_state['game_state'].all_rocks_collected() or st.session_state['game_state'].time_remaining <= 0:
+            st.session_state['game_over'] = True
 
-    if st.session_state['game_over']:
+        # Refresh the app to update the timer if the game is running
+        time.sleep(1)
+        st.rerun()
+
+    else:  # if st.session_state['game_over']:
         # Game Over Screen
+        time_up = False
+
         if st.session_state['game_state'].time_remaining <= 0:
-            st.write("Time's up! Game Over.")
+            st.error("TIME'S UP! You ran out of time. Game Over.")
+            time_up = True
         else:
             st.success("Congratulations! You collected all the moonrocks!")
+            time_up = False
 
-        if st.session_state['congrats_image'] is not None:
+        # Conditionally display the congratulations image
+        if not time_up and st.session_state['congrats_image'] is not None:
             st.image(st.session_state['congrats_image'], caption="Congratulations!", use_container_width=True)
-        else:
+        elif not time_up:
             st.write("You can't load this image - congratulations.")
 
-        score = st.session_state['game_state'].score
-        st.write(f"Your Score: {score}")
+        if not time_up:
+            time_taken = st.session_state['time_limit'] - int(st.session_state['game_state'].time_remaining)
+            st.write(f"Time Taken: {time_taken} seconds")
+        else:
+            time_taken = 0
 
-        # Save High Score Logic
+        # Save High Score Logic - DISABLE IF TIME IS UP
         if not st.session_state['high_score_saved']:
-            if st.button("Save High Score"):
-                st.session_state['high_scores'].append((st.session_state['player_name'], score))
-                st.session_state['high_scores'] = sorted(st.session_state['high_scores'], key=lambda item: item[1], reverse=True)[:5]
+            if not time_up and st.button("Save High Score"):
+                st.session_state['high_scores'].append((st.session_state['player_name'], time_taken))
+                st.session_state['high_scores'] = sorted(st.session_state['high_scores'], key=lambda item: item[1])[:5]
                 save_high_scores(st.session_state['high_scores'])
                 st.session_state['high_score_saved'] = True
                 st.rerun()
+            elif time_up:
+                st.write("You cannot save your high score because time ran out.")
         else:
             st.write("High score saved!")
 
         # Display High Scores
         st.subheader("High Scores")
-        for name, score in st.session_state['high_scores']:
-            st.write(f"{name}: {score}")
+        # Load new high scores.
+        high_scores = load_high_scores()
 
-    else:
-        # Refresh the app to update the timer if the game is running
-        time.sleep(1)
-        st.rerun()
+        for name, score in high_scores:
+            st.write(f"{name}: {score} seconds")
 

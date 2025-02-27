@@ -1,98 +1,127 @@
+# game_logic.py
+
 import pygame
 import random
 import os  # Import the os module
+from config import GRID_SIZE # Import from config to change in one place
 
-# Grid dimensions
-GRID_SIZE = 8
+class GameState:
+    """Encapsulates the entire game state."""
 
-# Initialize robot position
-robot_position = (0, 0)
-carrying_rock = False
-score = 0
+    def __init__(self, grid_size=GRID_SIZE):  # Default value from config
+        """Initializes the game state."""
+        self.grid_size = grid_size
+        self.robot_position = (0, 0)
+        self.carrying_rock = False
+        self.score = 0
+        self.stargate_zone = self._generate_stargate_zone()
+        self.moonrocks = self._generate_moonrocks()
+        self.load_sounds()
 
-# Define Stargate Zone (2x2)
-STARGATE_ZONE = {(6, 6), (6, 7), (7, 6), (7, 7)}
+    def _generate_stargate_zone(self):
+        """Generates a random stargate location (2x2 area)."""
+        stargate_size = 2
+        x = random.randint(0, self.grid_size - stargate_size) # Keep stargate within bounds
+        y = random.randint(0, self.grid_size - stargate_size)
+        return {(x + i, y + j) for i in range(stargate_size) for j in range(stargate_size)} # Cleaner set comprehension
 
-# Generate random moonrock positions ensuring they don't overlap with the Stargate
-moonrocks = set()
-while len(moonrocks) < 5:
-    new_rock = (random.randint(0, GRID_SIZE - 1), random.randint(0, GRID_SIZE - 1))
-    if new_rock not in STARGATE_ZONE:  # Prevent rocks from spawning inside the Stargate
-        moonrocks.add(new_rock)
 
-# Load sounds
-try:
-    if pygame.mixer.get_init() is None:  # Check if mixer is already initialized
-        pygame.mixer.init()
+    def _generate_moonrocks(self):
+        """Generates random moonrock positions, avoiding the Stargate."""
+        moonrocks = set()
+        while len(moonrocks) < 5: # To generate initial moonrocks
+            new_rock = (random.randint(0, self.grid_size - 1), random.randint(0, self.grid_size - 1))
+            if new_rock not in self.stargate_zone and new_rock not in moonrocks:  # Added duplicate check
+                moonrocks.add(new_rock)
+        return moonrocks
 
-    # Construct absolute paths for audio files
-    cwd = os.getcwd()
-    pickup_sound_path = os.path.join(cwd, "Graphics_Audio", "aud", "a_robot_beeping.wav")
-    drop_sound_path = os.path.join(cwd, "Graphics_Audio", "aud", "a_robot_beeping-2.wav")
+    def load_sounds(self):
+        """Loads sounds from file paths in config.py."""
+        try:
+            from config import PICKUP_SOUND_PATH, DROP_SOUND_PATH
 
-    pickup_sound = pygame.mixer.Sound(pickup_sound_path)  # Use absolute path
-    drop_sound = pygame.mixer.Sound(drop_sound_path)  # Use absolute path
+            if pygame.mixer.get_init() is None:
+                pygame.mixer.init()
 
-except pygame.error as e:
-    print(f"Error loading sound: {e}")
-    pickup_sound = None  # Disable pickup sound if load fails
-    drop_sound = None    # Disable drop sound if load fails
+            self.pickup_sound = pygame.mixer.Sound(PICKUP_SOUND_PATH)
+            self.drop_sound = pygame.mixer.Sound(DROP_SOUND_PATH)
 
-def move_robot(dx, dy):
-    """Move the robot within the grid."""
-    global robot_position
-    new_x = robot_position[0] + dx
-    new_y = robot_position[1] + dy
+        except pygame.error as e:
+            print(f"Error loading sound: {e}")
+            self.pickup_sound = None  # Disable pickup sound if load fails
+            self.drop_sound = None    # Disable drop sound if load fails
+        except FileNotFoundError as e:
+            print(f"Error loading sound: {e}")
+            self.pickup_sound = None  # Disable pickup sound if load fails
+            self.drop_sound = None
 
-    # Keep robot within grid boundaries
-    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
-        robot_position = (new_x, new_y)
-        print(f"Robot moved to {robot_position}")  # Debugging movement
+    def move_robot(self, dx: int, dy: int) -> None:
+        """Moves the robot within the grid boundaries."""
+        new_x = self.robot_position[0] + dx
+        new_y = self.robot_position[1] + dy
+        if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size:
+            self.robot_position = (new_x, new_y)
 
-def pick_up_rock():
-    """Pick up a moonrock if the robot is on one."""
-    global carrying_rock, moonrocks
+    def pick_up_rock(self) -> bool:
+        """Picks up a moonrock if the robot is on one."""
+        if self.carrying_rock:
+            print("You can only carry one rock at a time!")
+            return False
 
-    if carrying_rock:
-        print("You can only carry one rock at a time!")
+        if self.robot_position in self.moonrocks:
+            self.moonrocks.remove(self.robot_position)
+            self.carrying_rock = True
+            if self.pickup_sound:
+                pygame.mixer.Sound.play(self.pickup_sound)
+            print(f"Moonrock picked up at {self.robot_position}")
+            return True
         return False
 
-    if robot_position in moonrocks:
-        moonrocks.remove(robot_position)  # Remove rock from grid
-        carrying_rock = True
-        if pickup_sound:
-            pygame.mixer.Sound.play(pickup_sound)
-        print(f"Moonrock picked up at {robot_position}")
-        return True
-    return False
+    def drop_rock(self) -> bool:
+        """Drops a moonrock at the Stargate and updates the score."""
+        if not self.carrying_rock:
+            print("No rock to drop!")
+            return False
 
-def drop_rock():
-    """Drop a moonrock at the Stargate and update the score."""
-    global carrying_rock, score
+        if self.robot_position in self.stargate_zone:
+            self.carrying_rock = False
+            self.score += 1
+            if self.drop_sound:
+                pygame.mixer.Sound.play(self.drop_sound)
+            print(f"Moonrock delivered to Stargate! Score: {self.score}")
+            return True
+        else:
+            print("You must drop the rock at the Stargate!")
+            return False
 
-    if not carrying_rock:
-        print("No rock to drop!")
-        return False
+    def get_game_state(self) -> dict:
+        """Returns the current game state as a dictionary."""
+        return {
+            "robot_position": self.robot_position,
+            "carrying_rock": self.carrying_rock,
+            "moonrocks": self.moonrocks,
+            "score": self.score,
+            "grid_size": self.grid_size,
+            "stargate_zone": self.stargate_zone
+        }
 
-    if robot_position in STARGATE_ZONE:
-        carrying_rock = False
-        score += 1  # Increase score when rock is delivered
-        if drop_sound:
-            pygame.mixer.Sound.play(drop_sound)
-        print(f"Moonrock delivered to Stargate! Score: {score}")
-        return True
-    else:
-        print("You must drop the rock at the Stargate!")
-        return False
 
-def get_game_state():
-    """Return the current state of the game."""
-    global robot_position, carrying_rock, moonrocks, score
-    return {
-        "robot_position": robot_position,
-        "carrying_rock": carrying_rock,
-        "moonrocks": moonrocks,
-        "score": score
+# Initialize the game state (outside the class definition, but module level)
+game_state = GameState() # Changed to be an instantiation from the GameState
+# The reason for calling the function here is because other files have dependencies on this.
+
+def move_robot(dx, dy): #Function to move the robot on a new position
+    game_state.move_robot(dx,dy)
+    # The reason why this has the global gamestate here, is because streamlit uses the function.
+    # Therefore the file needs access to it and so does streamlit so I am not defining it again inside streamlit.
+def pick_up_rock(): #Function to call the game state's pick_up_rock
+    game_state.pick_up_rock()
+
+def drop_rock(): #Function to call the game state's drop_rock
+    game_state.drop_rock()
+
+def get_game_state(): #Function to access gamestate
+    return game_state.get_game_state() # Calling a function, for the attributes.
     }
 
 

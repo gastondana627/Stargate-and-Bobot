@@ -26,13 +26,19 @@ class GameRenderer:
     def _load_images(self) -> Tuple[pygame.Surface, pygame.Surface, pygame.Surface]:
         """Loads and scales game images."""
         try:
-            robot_img = pygame.image.load(ROBOT_IMAGE_PATH).convert_alpha()
+            # Note: convert_alpha() requires a display mode to be set.
+            # In a headless/Streamlit environment, we might not have one.
+            robot_img = pygame.image.load(ROBOT_IMAGE_PATH)
+            moonrock_img = pygame.image.load(MOONROCK_IMAGE_PATH)
+            stargate_img = pygame.image.load(STARGATE_IMAGE_PATH)
+
+            if pygame.display.get_init() and pygame.display.get_surface():
+                robot_img = robot_img.convert_alpha()
+                moonrock_img = moonrock_img.convert_alpha()
+                stargate_img = stargate_img.convert_alpha()
+
             robot_img = pygame.transform.scale(robot_img, (CELL_SIZE, CELL_SIZE))
-
-            moonrock_img = pygame.image.load(MOONROCK_IMAGE_PATH).convert_alpha()
             moonrock_img = pygame.transform.scale(moonrock_img, (CELL_SIZE, CELL_SIZE))
-
-            stargate_img = pygame.image.load(STARGATE_IMAGE_PATH).convert_alpha()
             stargate_img = pygame.transform.scale(stargate_img, (CELL_SIZE * STARGATE_SIZE, CELL_SIZE * STARGATE_SIZE))
 
             return robot_img, moonrock_img, stargate_img

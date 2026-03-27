@@ -87,7 +87,16 @@ Before running the game, ensure you have the following installed:
 
 ## File Structure
 
+The project is organized into several key files for clarity and modularity:
 
+*   **`config.py`**: Contains all game constants, including grid size, cell size, asset paths, and colors.
+*   **`game_logic.py`**: Defines the `GameState` class, managing the core game mechanics, scoring, and timer.
+*   **`main.py`**: Defines the `GameRenderer` class, which handles Pygame asset loading and frame generation.
+*   **`streamlit_app.py`**: The entry point of the application, managing the Streamlit web UI and session state.
+*   **`test_logic.py`**: Unit tests for verifying game logic (movement, pickups, delivery).
+*   **`debug_render.py`**: A utility for headless rendering verification.
+*   **`Graphics_Audio/`**: Contains all visual assets (`img/`) and sound effects (`aud/`, `music/`).
+*   **`high_scores.json`**: Persistent storage for player leaderboards.
 
 ## Configuration
 

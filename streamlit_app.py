@@ -4,11 +4,10 @@ import pygame
 import io
 from PIL import Image
 from game_logic import GameState
-import main
+from main import GameRenderer
 import json
 import time
 import random
-import streamlit.components.v1 as components
 
 # Set up page configuration
 st.set_page_config(page_title="Moonrock Collection Game", page_icon="🤖")
@@ -18,7 +17,7 @@ def load_high_scores():
     try:
         with open("high_scores.json", "r") as f:
             return json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         return []
 
 def save_high_scores(high_scores):
@@ -32,6 +31,8 @@ if 'game_started' not in st.session_state:
     st.session_state['game_started'] = False
 if 'game_state' not in st.session_state:
     st.session_state['game_state'] = None
+if 'renderer' not in st.session_state:
+    st.session_state['renderer'] = GameRenderer()
 if 'high_scores' not in st.session_state:
     st.session_state['high_scores'] = load_high_scores()
 if 'game_over' not in st.session_state:
@@ -59,7 +60,6 @@ if st.session_state['welcome_image'] is None or st.session_state['congrats_image
             "Graphics_Audio/img/robot.png",
             "Graphics_Audio/img/moonrock.png",
             "Graphics_Audio/img/Stargate.png",
-            "Graphics_Audio/img/Stargate1.jpg",
         ]
         random_img_path = random.choice(image_options)
         st.session_state['welcome_image'] = Image.open(random_img_path)
@@ -75,7 +75,7 @@ if not st.session_state['game_started']:
     if st.session_state['welcome_image'] is not None:
        st.image(st.session_state['welcome_image'], caption="Welcome! Help Bobot collect the moonrocks!", use_container_width=True)
     else:
-        st.write("You can't load this image - welcome.")
+        st.write("Welcome! Help Bobot collect the moonrocks!")
 
     st.write("Enter your name to start:")
     player_name_input = st.text_input("Your Name", key="player_name_input")
@@ -126,8 +126,8 @@ else:
             if st.button("Drop"):
                 st.session_state['game_state'].drop_rock()
 
-        # Generate and display the frame
-        frame = main.generate_frame(st.session_state['game_state'].get_game_state())
+        # Generate and display the frame using the renderer from session state
+        frame = st.session_state['renderer'].generate_frame(st.session_state['game_state'].get_game_state())
         display_frame(frame)
 
         # Game Over Check
@@ -153,7 +153,7 @@ else:
         if not time_up and st.session_state['congrats_image'] is not None:
             st.image(st.session_state['congrats_image'], caption="Congratulations!", use_container_width=True)
         elif not time_up:
-            st.write("You can't load this image - congratulations.")
+            st.write("Congratulations!")
 
         if not time_up:
             time_taken = st.session_state['time_limit'] - int(st.session_state['game_state'].time_remaining)
@@ -182,3 +182,6 @@ else:
         for name, score in high_scores:
             st.write(f"{name}: {score} seconds")
 
+        if st.button("Play Again"):
+            st.session_state['game_started'] = False
+            st.rerun()
